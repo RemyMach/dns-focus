@@ -19,7 +19,7 @@ func HandlePacket(pc net.PacketConn, addr net.Addr, buf []byte) {
 	/*log.Println(pc)
 	log.Println(addr.String())
 	log.Println(string(buf))*/
-	/*var msg dnsmessage.Message
+	var msg dnsmessage.Message
 	if err := msg.Unpack(buf); err != nil {
 		fmt.Printf("Erreur lors du déballage du message : %v\n", err)
 	}
@@ -40,7 +40,7 @@ func HandlePacket(pc net.PacketConn, addr net.Addr, buf []byte) {
 	}
 	if ipBlocked {
 		return
-	}*/
+	}
 
 	if err := handlePacket(pc, addr, buf); err != nil {
 		fmt.Printf("handlePacket error [%s]: %s\n", addr.String(), err)
