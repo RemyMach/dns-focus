@@ -14,6 +14,8 @@ import (
 
 const ROOT_SERVERS = "198.41.0.4,199.9.14.201,192.33.4.12,199.7.91.13,192.203.230.10,192.5.5.241,192.112.36.4,198.97.190.53"
 
+const ROOT_SERVERS_IPV6 = "2001:503:ba3e::2:30,2001:500:200::b,2001:500:2::c,2001:500:2d::d,2001:500:a8::e,2001:500:2f::f,2001:500:12::d0d,2001:500:1::53"
+
 func HandlePacket(pc net.PacketConn, addr net.Addr, buf []byte) {
 
 	/*log.Println(pc)
@@ -256,6 +258,7 @@ func RespondToBlockIp(pc net.PacketConn, addr net.Addr, buf []byte) {
 			OpCode:             msg.Header.OpCode,
 			Authoritative:      true,
 			RecursionAvailable: msg.Header.RecursionDesired,
+			RecursionDesired: true,
 			RCode:              dnsmessage.RCodeSuccess,
 		}
 
