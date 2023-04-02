@@ -1,10 +1,9 @@
 package main
 
-import (
-	dnsconfig "dns-server/dns-config"
-)
+import "dns-server/cli"
 
 func main() {
-	dnsconfig.Reset()
+	//dnsconfig.Reset()
 	//server.Start()
+	cli.InitCli()
 }
