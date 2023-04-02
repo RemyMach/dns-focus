@@ -3,6 +3,7 @@ package resolver
 import (
 	"bufio"
 	"crypto/rand"
+	"dns-server/cli/focus"
 	"fmt"
 	"log"
 	"math/big"
@@ -16,7 +17,7 @@ const ROOT_SERVERS = "198.41.0.4,199.9.14.201,192.33.4.12,199.7.91.13,192.203.23
 
 const ROOT_SERVERS_IPV6 = "2001:503:ba3e::2:30,2001:500:200::b,2001:500:2::c,2001:500:2d::d,2001:500:a8::e,2001:500:2f::f,2001:500:12::d0d,2001:500:1::53"
 
-func HandlePacket(pc net.PacketConn, addr net.Addr, buf []byte) {
+func HandlePacket(pc net.PacketConn, addr net.Addr, buf []byte, dnsConfig focus.DnsConfig) {
 
 	/*log.Println(pc)
 	log.Println(addr.String())
@@ -27,11 +28,10 @@ func HandlePacket(pc net.PacketConn, addr net.Addr, buf []byte) {
 	}
 	log.Println("questions")
 	log.Println(msg.Questions[0].Name.String())
-	domainsBlocked := "youtube.com.,pomme2.machavoine.fr."
 	ipBlocked := false
 
-	for _, domain := range strings.Split(domainsBlocked, ",") {
-		if msg.Questions[0].Name.String() == domain {
+	for _, domain := range dnsConfig.DomainsBlocked {
+		if msg.Questions[0].Name.String() == domain + "." {
 			fmt.Printf("----------------------------------------------\n")
 			fmt.Printf("Block Ip for [%s]: %s\n", addr.String(), domain)
 			fmt.Printf("----------------------------------------------\n")

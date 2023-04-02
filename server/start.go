@@ -1,6 +1,7 @@
 package server
 
 import (
+	"dns-server/cli/focus"
 	resolver "dns-server/resolver"
 	"fmt"
 	"log"
@@ -8,7 +9,7 @@ import (
 )
 
 
-func Start() {
+func Start(dnsConfig focus.DnsConfig) {
 	p, err := net.ListenPacket("udp", ":53")
 	if err != nil {
 		log.Fatal(err)
