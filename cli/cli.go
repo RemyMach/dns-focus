@@ -5,6 +5,8 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+
+	"dns-server/cli/focus"
 )
 
 var rootCmd = &cobra.Command{
@@ -14,7 +16,7 @@ var rootCmd = &cobra.Command{
 }
 
 func InitCli() {
-	focusCommand := initFocusCommand()
+	focusCommand := focus.InitFocusCommand()
 	rootCmd.AddCommand(focusCommand)
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
 
