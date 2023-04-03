@@ -22,7 +22,7 @@ const ROOT_SERVERS_IPV6 = "2001:503:ba3e::2:30,2001:500:200::b,2001:500:2::c,200
 func HandlePacket(pc net.PacketConn, addr net.Addr, buf []byte, dnsConfig *dto.DnsConfig, dnsMode string) {
 
 	
-	ipBlocked, err := handleBlockIp(pc, addr, buf, dnsConfig)
+	ipBlocked, err := handleBlockDomains(pc, addr, buf, dnsConfig)
 	if err != nil {
 		log.Println(err.Error())
 		return		
@@ -30,7 +30,6 @@ func HandlePacket(pc net.PacketConn, addr net.Addr, buf []byte, dnsConfig *dto.D
 	if ipBlocked {
 		return
 	}
-
 
 	if dnsMode == "proxy" {
 		handleDNSRequestToGoogleDns(pc, buf, addr)
@@ -283,7 +282,7 @@ func RespondToBlockIp(pc net.PacketConn, addr net.Addr, buf []byte) {
 	}
 }
 
-func handleBlockIp(pc net.PacketConn, addr net.Addr, buf []byte, dnsConfig *dto.DnsConfig) (bool, error) {
+func handleBlockDomains(pc net.PacketConn, addr net.Addr, buf []byte, dnsConfig *dto.DnsConfig) (bool, error) {
 	var msg dnsmessage.Message
 	if err := msg.Unpack(buf); err != nil {
 		fmt.Printf("Erreur lors du déballage du message : %v\n", err)
