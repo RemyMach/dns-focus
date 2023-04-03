@@ -4,7 +4,6 @@ import (
 	"crypto/rand"
 	"math/big"
 	"net"
-	"strings"
 	"testing"
 	"time"
 
@@ -80,7 +79,7 @@ func TestOutgoingDnsQuery(t *testing.T) {
 		Type:  dnsmessage.TypeNS,
 		Class: dnsmessage.ClassINET,
 	}
-	rootServers := strings.Split(ROOT_SERVERS, ",")
+	rootServers := ROOT_SERVERS
 	if len(rootServers) == 0 {
 		t.Fatalf("No root servers found")
 	}
