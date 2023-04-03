@@ -5,26 +5,27 @@ dns focus is an open source DNS server that allows you to easily block unwanted 
 ## Table des matières
 
 - [Features](#Features)
-- [Prérequis](#prérequis)
-- [Installation](#installation)
+- [Requirements](#Requirements)
+- [Install](#Install)
 - [Configuration](#configuration)
 - [Utilisation](#utilisation)
 - [Licence](#licence)
 
 ## Features
 
-- Blocage d'adresses IP indésirables
-- Supporte IPv4
-- Facile à configurer et à utiliser
+- Blocking unwanted domain
+- IPv4 support
+- udp support
+- Easy to set up and use
 
-## Prerequisites
+## Requirements
 
-- Go 1.18 ou supérieur
-- Un système d'exploitation compatible (Linux, macOS)
+- Go 1.16 or higher
+- A compatible operating system (Linux, macOS)
 
-## Installation
+## Install
 
-1. Clonez le dépôt :
+1. Clone the repo :
 
    ```bash
    git clone https://github.com/RemyMach/dns-server.git
@@ -35,11 +36,24 @@ dns focus is an open source DNS server that allows you to easily block unwanted 
 
     `go build -o main`
 
-3. Run the project
+Configure your system or device to use the DNS server by following the instructions specific to your operating system.
 
-    `./main`
+- for mac you can simply use with your wifi network
+```bash
+networksetup -setdnsservers Wi-Fi 127.0.0.1
+```
+
+Once you have finished using the server, remember to reset the basic dns server
+- for example to use google dns server
+```bash
+networksetup -setdnsservers Wi-Fi 8.8.8.8
+```
+
+
 
 ## Configuration
+
+you can block domains by adding domain names to those already present or make your own configuration file with your blocked domains
 
 ```json
 {
@@ -57,14 +71,23 @@ dns focus is an open source DNS server that allows you to easily block unwanted 
 
 ## Utilisation
 
-- Pour démarrer le serveur DNS, exécutez simplement la commande suivante :
+- To start the DNS server in any mode through the google dns server :
 
 ```bash
-./NomDuProjetDNS
+./NomDuProjetDNS dns {mode} --proxy
 ```
-Configurer votre système ou votre appareil pour utiliser le serveur DNS en suivant les instructions spécifiques à votre système d'exploitation.
+
+- To start the DNS server in focus mode with google proxy (prefered mode to work in focus mode):
+```bash
+./NomDuProjetDNS dns focus --proxy
+```
+
+- To start the DNS server in focus mode with only your dns server to resolve Dns request (for example if you want no cache on the domain name resolution)
+```bash
+./NomDuProjetDNS dns focus --proxy
+```
 
 
 ## Licence
 
-dns-server- est distribué sous la licence MIT. Voir le fichier LICENSE pour plus d'informations.
+DNS focus is distributed under the MIT license.
