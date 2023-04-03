@@ -9,20 +9,18 @@ import (
 	"log"
 	"math/big"
 	"net"
-	"strings"
 
 	"dns-focus/utils"
 
 	"golang.org/x/net/dns/dnsmessage"
 )
 
-const ROOT_SERVERS = "198.41.0.4,199.9.14.201,192.33.4.12,199.7.91.13,192.203.230.10,192.5.5.241,192.112.36.4,198.97.190.53"
+var ROOT_SERVERS = [8]string{"198.41.0.4","199.9.14.201","192.33.4.12","199.7.91.13","192.203.230.10","192.5.5.241","192.112.36.4","198.97.190.53"}
 
-const ROOT_SERVERS_IPV6 = "2001:503:ba3e::2:30,2001:500:200::b,2001:500:2::c,2001:500:2d::d,2001:500:a8::e,2001:500:2f::f,2001:500:12::d0d,2001:500:1::53"
+var ROOT_SERVERS_IPV6 = [8]string{"2001:503:ba3e::2:30,2001:500:200::b,2001:500:2::c,2001:500:2d::d,2001:500:a8::e,2001:500:2f::f,2001:500:12::d0d,2001:500:1::53"}
 
 func HandlePacket(pc net.PacketConn, addr net.Addr, buf []byte, dnsConfig *config.DnsConfig, serverMode common.ServerMode) {
 
-	
 	ipBlocked, err := handleBlockDomains(pc, addr, buf, dnsConfig)
 	if err != nil {
 		log.Println(err.Error())
@@ -63,12 +61,6 @@ func handlePacket(pc net.PacketConn, addr net.Addr, buf []byte) error {
 		return err
 	}
 
-	// send response here
-	for _,answer := range response.Answers {
-		log.Println(answer.Body)
-		//log.Println(answer.Header.Class)
-	}
-	//log.Println(addr)
 	_, err = pc.WriteTo(responseBuffer, addr)
 	if err != nil {
 		return err
@@ -78,7 +70,6 @@ func handlePacket(pc net.PacketConn, addr net.Addr, buf []byte) error {
 }
 
 func dnsQuery(servers []net.IP, question dnsmessage.Question) (*dnsmessage.Message, error) {
-	fmt.Printf("Question: %+v\n", question)
 	for i := 0; i < 3; i++ {
 		dnsAnswer, header, err := outgoingDnsQuery(servers, question)
 		if err != nil {
@@ -89,19 +80,16 @@ func dnsQuery(servers []net.IP, question dnsmessage.Question) (*dnsmessage.Messa
 			return nil, err
 		}
 
-		log.Printf("authoritative %t \n", header.Authoritative)
 		if header.Authoritative {
-			log.Println("parsedAnswers")
-			log.Println(parsedAnswers)
 			return &dnsmessage.Message{
 				Header:  dnsmessage.Header{
 					Response: true, 
-					RecursionAvailable: true},
+					RecursionAvailable: true,
+				},
 				Answers: parsedAnswers,
 			}, nil
 		}
 		authorities, err := dnsAnswer.AllAuthorities()
-		log.Printf("all Authorities %v \n\n",  authorities)
 		if err != nil {
 			return nil, err
 		}
@@ -160,15 +148,14 @@ func dnsQuery(servers []net.IP, question dnsmessage.Question) (*dnsmessage.Messa
 }
 
 func outgoingDnsQuery(servers []net.IP, question dnsmessage.Question) (*dnsmessage.Parser, *dnsmessage.Header, error) {
-	fmt.Printf("New outgoing dns query for %s, servers: %+v\n", question.Name.String(), servers)
 	max := ^uint16(0)
-	randomNumber, err := rand.Int(rand.Reader, big.NewInt(int64(max)))
+	idGenerated, err := rand.Int(rand.Reader, big.NewInt(int64(max)))
 	if err != nil {
 		return nil, nil, err
 	}
 	message := dnsmessage.Message{
 		Header: dnsmessage.Header{
-			ID:       uint16(randomNumber.Int64()),
+			ID:       uint16(idGenerated.Int64()),
 			Response: false,
 			OpCode:   dnsmessage.OpCode(0),
 		},
@@ -226,7 +213,7 @@ func outgoingDnsQuery(servers []net.IP, question dnsmessage.Question) (*dnsmessa
 
 func getRootServers() []net.IP {
 	rootServers := []net.IP{}
-	for _, rootServer := range strings.Split(ROOT_SERVERS, ",") {
+	for _, rootServer := range ROOT_SERVERS {
 		rootServers = append(rootServers, net.ParseIP(rootServer))
 	}
 	return rootServers
@@ -237,7 +224,7 @@ func RespondToBlockIp(pc net.PacketConn, addr net.Addr, buf []byte) {
 
 		var msg dnsmessage.Message
 		if err := msg.Unpack(buf); err != nil {
-			fmt.Printf("Erreur lors du déballage du message : %v\n", err)
+			fmt.Printf("Erreur when Unpack message : %v\n", err)
 			continue
 		}
 
@@ -275,7 +262,7 @@ func RespondToBlockIp(pc net.PacketConn, addr net.Addr, buf []byte) {
 
 		responseBytes, err := response.Pack()
 		if err != nil {
-			fmt.Printf("Erreur lors de la construction de la réponse : %v\n", err)
+			fmt.Printf("Error during the construction of the message : %v\n", err)
 			continue
 		}
 
@@ -286,11 +273,9 @@ func RespondToBlockIp(pc net.PacketConn, addr net.Addr, buf []byte) {
 func handleBlockDomains(pc net.PacketConn, addr net.Addr, buf []byte, dnsConfig *config.DnsConfig) (bool, error) {
 	var msg dnsmessage.Message
 	if err := msg.Unpack(buf); err != nil {
-		fmt.Printf("Erreur lors du déballage du message : %v\n", err)
+		fmt.Printf("Error when unpacking the message : %v\n", err)
 		return false, err
 	}
-	log.Println("questions")
-	log.Println(msg.Questions[0].Name.String())
 
 	for _, domain := range dnsConfig.DomainsBlocked {
 		matchRegex := utils.MatchRegex(`^.*` + domain + `\.$`, msg.Questions[0].Name.String())
@@ -312,27 +297,27 @@ func handleDNSRequestToGoogleDns(pc net.PacketConn, buf []byte, addr net.Addr) e
 
 	conn, err := net.Dial("udp", "8.8.8.8:53")
 	if err != nil {
-		log.Printf("Erreur lors de la connexion au serveur DNS de Google: %v", err)
+		log.Printf("Error when connecting to the Google DNS server: %v", err)
 		return err
 	}
 	defer conn.Close()
 
 	_, err = conn.Write(buf)
 	if err != nil {
-		log.Printf("Erreur lors de l'envoi de la requête au serveur DNS de Google: %v", err)
+		log.Printf("Error when sending the request to the Google DNS server: %v", err)
 		return err
 	}
 
 	responseData := make([]byte, 512)
 	n, err := conn.Read(responseData)
 	if err != nil {
-		log.Printf("Erreur lors de la réception de la réponse du serveur DNS de Google: %v", err)
+		log.Printf("Error when receiving the response from the Google DNS server: %v", err)
 		return err
 	}
 
 	_, err = pc.WriteTo(responseData[:n], addr)
 	if err != nil {
-		log.Printf("Erreur lors de l'écriture de la réponse au client: %v", err)
+		log.Printf("Error when writing the response to the client: %v", err)
 		return err
 	}
 

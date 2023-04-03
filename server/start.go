@@ -3,7 +3,7 @@ package server
 import (
 	"dns-focus/common"
 	"dns-focus/config"
-	resolver "dns-focus/resolver"
+	"dns-focus/resolver"
 	"fmt"
 	"log"
 	"net"
