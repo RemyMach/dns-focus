@@ -39,5 +39,4 @@ func Reset() {
 	}
 
 	log.Printf("dns server well configured")
-	
 }

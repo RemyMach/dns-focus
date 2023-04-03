@@ -3,13 +3,14 @@ package resolver
 import (
 	"bufio"
 	"crypto/rand"
-	"dns-server/cli/focus"
+	"dns-server/server/dto"
 	"fmt"
 	"log"
 	"math/big"
 	"net"
 	"strings"
 
+	"github.com/miekg/dns"
 	"golang.org/x/net/dns/dnsmessage"
 )
 
@@ -17,31 +18,21 @@ const ROOT_SERVERS = "198.41.0.4,199.9.14.201,192.33.4.12,199.7.91.13,192.203.23
 
 const ROOT_SERVERS_IPV6 = "2001:503:ba3e::2:30,2001:500:200::b,2001:500:2::c,2001:500:2d::d,2001:500:a8::e,2001:500:2f::f,2001:500:12::d0d,2001:500:1::53"
 
-func HandlePacket(pc net.PacketConn, addr net.Addr, buf []byte, dnsConfig focus.DnsConfig) {
+func HandlePacket(pc net.PacketConn, addr net.Addr, buf []byte, dnsConfig *dto.DnsConfig, dnsMode string) {
 
-	/*log.Println(pc)
-	log.Println(addr.String())
-	log.Println(string(buf))*/
-	var msg dnsmessage.Message
-	if err := msg.Unpack(buf); err != nil {
-		fmt.Printf("Erreur lors du déballage du message : %v\n", err)
-	}
-	log.Println("questions")
-	log.Println(msg.Questions[0].Name.String())
-	ipBlocked := false
-
-	for _, domain := range dnsConfig.DomainsBlocked {
-		if msg.Questions[0].Name.String() == domain + "." {
-			fmt.Printf("----------------------------------------------\n")
-			fmt.Printf("Block Ip for [%s]: %s\n", addr.String(), domain)
-			fmt.Printf("----------------------------------------------\n")
-			RespondToBlockIp(pc, addr, buf)
-			ipBlocked = true
-			return 
-		}
+	
+	ipBlocked, err := handleBlockIp(pc, addr, buf, dnsConfig)
+	if err != nil {
+		log.Println(err.Error())
+		return		
 	}
 	if ipBlocked {
 		return
+	}
+
+
+	if dnsMode == "proxy" {
+		handleDNSRequestToGoogleDns(pc, buf)
 	}
 
 	if err := handlePacket(pc, addr, buf); err != nil {
@@ -292,4 +283,58 @@ func RespondToBlockIp(pc net.PacketConn, addr net.Addr, buf []byte) {
 
 		pc.WriteTo(responseBytes, addr)
 	}
+}
+
+func handleBlockIp(pc net.PacketConn, addr net.Addr, buf []byte, dnsConfig *dto.DnsConfig) (bool, error) {
+	var msg dnsmessage.Message
+	if err := msg.Unpack(buf); err != nil {
+		fmt.Printf("Erreur lors du déballage du message : %v\n", err)
+		return false, err
+	}
+	log.Println("questions")
+	log.Println(msg.Questions[0].Name.String())
+
+	for _, domain := range dnsConfig.DomainsBlocked {
+		if msg.Questions[0].Name.String() == domain + "." {
+			fmt.Printf("----------------------------------------------\n")
+			fmt.Printf("Block Ip for [%s]: %s\n", addr.String(), domain)
+			fmt.Printf("----------------------------------------------\n")
+			RespondToBlockIp(pc, addr, buf)
+			
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+
+func handleDNSRequestToGoogleDns(w dns.ResponseWriter, r *dns.Msg) error {
+	// Créez un nouveau message DNS pour la requête
+	m := new(dns.Msg)
+	m.SetReply(r)
+	m.RecursionDesired = true
+	m.Authoritative = false
+
+	// Envoyez la requête au serveur DNS de Google
+	c := new(dns.Client)
+	in, _, err := c.Exchange(r, "8.8.8.8:53")
+
+	if err != nil {
+		log.Printf("Erreur lors de l'échange avec le serveur DNS de Google: %s\n", err.Error())
+		m.SetRcode(r, dns.RcodeServerFailure)
+	} else {
+		// Copiez la réponse de Google dans le message de réponse
+		for _, a := range in.Answer {
+			m.Answer = append(m.Answer, a)
+		}
+	}
+
+	// Écrivez la réponse au client
+	err = w.WriteMsg(m)
+	if err != nil {
+		log.Printf("Erreur lors de l'écriture de la réponse au client: %s\n", err.Error())
+		return err
+	}
+	return nil
 }

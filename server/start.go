@@ -1,15 +1,15 @@
 package server
 
 import (
-	"dns-server/cli/focus"
 	resolver "dns-server/resolver"
+	"dns-server/server/dto"
 	"fmt"
 	"log"
 	"net"
 )
 
 
-func Start(dnsConfig focus.DnsConfig) {
+func Start(dnsConfig *dto.DnsConfig) {
 	p, err := net.ListenPacket("udp", ":53")
 	if err != nil {
 		log.Fatal(err)
@@ -23,6 +23,6 @@ func Start(dnsConfig focus.DnsConfig) {
 			fmt.Printf("Connection error [%s]: %s\n", addr.String(), err)
 			continue
 		}
-		go resolver.HandlePacket(p, addr, buf[:n])
+		go resolver.HandlePacket(p, addr, buf[:n], dnsConfig)
 	}
 }

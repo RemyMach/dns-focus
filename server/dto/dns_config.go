@@ -1,4 +1,4 @@
-package focus
+package dto
 
 
 type DnsConfig struct {
