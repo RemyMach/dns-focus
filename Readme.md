@@ -17,6 +17,7 @@ dns focus is an open source DNS server that allows you to easily block unwanted 
 - IPv4 support
 - udp support
 - Easy to set up and use
+- dns proxy
 
 ## Requirements
 

@@ -1,4 +1,4 @@
-package dnsconfig
+package hostDns
 
 import (
 	"fmt"
