@@ -1,17 +1,16 @@
 package cli
 
 import (
+	"dns-server/cli/focus"
 	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
-
-	"dns-server/cli/focus"
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "task",
-	Short: "task is a CLI for managing your TODOs.",
+	Use:   "dns-server",
+	Short: "dns-server is a CLI for start a focus mode, start your own dns server with custom blocking ips ...",
 	
 }
 
