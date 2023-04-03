@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"dns-server/cli/focus"
+	"dns-focus/cli/focus"
 	"fmt"
 	"os"
 
@@ -9,8 +9,8 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "dns-server",
-	Short: "dns-server is a CLI for start a focus mode, start your own dns server with custom blocking ips ...",
+	Use:   "dns-focus",
+	Short: "dns-focus is a CLI for start a focus mode, start your own dns server with custom blocking domains ...",
 	
 }
 

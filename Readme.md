@@ -2,7 +2,7 @@
 
 dns focus is an open source DNS server that allows you to easily block unwanted domains for your focus
 
-## Table des matières
+## Table of contents
 
 - [Features](#Features)
 - [Requirements](#Requirements)
@@ -28,7 +28,7 @@ dns focus is an open source DNS server that allows you to easily block unwanted 
 1. Clone the repo :
 
    ```bash
-   git clone https://github.com/RemyMach/dns-server.git
+   git clone https://github.com/RemyMach/dns-focus.git
    ```
 
 
@@ -36,18 +36,25 @@ dns focus is an open source DNS server that allows you to easily block unwanted 
 
     `go build -o main`
 
-Configure your system or device to use the DNS server by following the instructions specific to your operating system.
+3. Configure your system or device to use the DNS server by following the instructions specific to your operating system.
 
-- for mac you can simply use with your wifi network
-```bash
-networksetup -setdnsservers Wi-Fi 127.0.0.1
-```
+    - for mac you can simply use with your wifi network
+    ```bash
+    networksetup -setdnsservers Wi-Fi 127.0.0.1
+    ```
+
+    - for linux you can simply modify the file /etc/resolv.conf
+        - comment the actual dns server
+        - add your dns server
+            ```
+            nameserver 127.0.0.1
+            ```
 
 Once you have finished using the server, remember to reset the basic dns server
 - for example to use google dns server
-```bash
-networksetup -setdnsservers Wi-Fi 8.8.8.8
-```
+    ```bash
+    networksetup -setdnsservers Wi-Fi 8.8.8.8
+    ```
 
 
 
@@ -71,20 +78,30 @@ you can block domains by adding domain names to those already present or make yo
 
 ## Utilisation
 
+### mode
+- focus
+
+### start
+
 - To start the DNS server in any mode through the google dns server :
 
 ```bash
-./NomDuProjetDNS dns {mode} --proxy
+./main dns {mode} --proxy
 ```
 
 - To start the DNS server in focus mode with google proxy (prefered mode to work in focus mode):
 ```bash
-./NomDuProjetDNS dns focus --proxy
+./main dns focus --proxy
+```
+
+- To start the DNS server in focus mode with google proxy and a specify config json file for example config/config.json:
+```bash
+./main dns focus --file "config/config.json" --proxy
 ```
 
 - To start the DNS server in focus mode with only your dns server to resolve Dns request (for example if you want no cache on the domain name resolution)
 ```bash
-./NomDuProjetDNS dns focus --proxy
+./main dns focus
 ```
 
 

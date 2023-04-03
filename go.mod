@@ -1,4 +1,4 @@
-module dns-server
+module dns-focus
 
 go 1.18
 
