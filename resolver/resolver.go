@@ -10,7 +10,8 @@ import (
 	"net"
 	"strings"
 
-	"github.com/miekg/dns"
+	"dns-server/utils"
+
 	"golang.org/x/net/dns/dnsmessage"
 )
 
@@ -32,11 +33,11 @@ func HandlePacket(pc net.PacketConn, addr net.Addr, buf []byte, dnsConfig *dto.D
 
 
 	if dnsMode == "proxy" {
-		handleDNSRequestToGoogleDns(pc, buf)
-	}
-
-	if err := handlePacket(pc, addr, buf); err != nil {
-		fmt.Printf("handlePacket error [%s]: %s\n", addr.String(), err)
+		handleDNSRequestToGoogleDns(pc, buf, addr)
+	} else {
+		if err := handlePacket(pc, addr, buf); err != nil {
+			fmt.Printf("handlePacket error [%s]: %s\n", addr.String(), err)
+		}
 	}
 }
 
@@ -46,7 +47,6 @@ func handlePacket(pc net.PacketConn, addr net.Addr, buf []byte) error {
 	if err != nil {
 		return err
 	}
-	//question, err := p.Question()
 	questions, err := p.AllQuestions()
 	if err != nil {
 		return err
@@ -55,8 +55,6 @@ func handlePacket(pc net.PacketConn, addr net.Addr, buf []byte) error {
 	if err != nil {
 		return err
 	}
-	log.Println("response")
-	log.Println(response)
 	// set response object here
 	response.Header.ID = header.ID
 	response.Questions = questions
@@ -295,7 +293,8 @@ func handleBlockIp(pc net.PacketConn, addr net.Addr, buf []byte, dnsConfig *dto.
 	log.Println(msg.Questions[0].Name.String())
 
 	for _, domain := range dnsConfig.DomainsBlocked {
-		if msg.Questions[0].Name.String() == domain + "." {
+		matchRegex := utils.MatchRegex(`^.*` + domain + `\.$`, msg.Questions[0].Name.String())
+		if matchRegex {
 			fmt.Printf("----------------------------------------------\n")
 			fmt.Printf("Block Ip for [%s]: %s\n", addr.String(), domain)
 			fmt.Printf("----------------------------------------------\n")
@@ -309,32 +308,33 @@ func handleBlockIp(pc net.PacketConn, addr net.Addr, buf []byte, dnsConfig *dto.
 }
 
 
-func handleDNSRequestToGoogleDns(w dns.ResponseWriter, r *dns.Msg) error {
-	// Créez un nouveau message DNS pour la requête
-	m := new(dns.Msg)
-	m.SetReply(r)
-	m.RecursionDesired = true
-	m.Authoritative = false
+func handleDNSRequestToGoogleDns(pc net.PacketConn, buf []byte, addr net.Addr) error {
 
-	// Envoyez la requête au serveur DNS de Google
-	c := new(dns.Client)
-	in, _, err := c.Exchange(r, "8.8.8.8:53")
-
+	conn, err := net.Dial("udp", "8.8.8.8:53")
 	if err != nil {
-		log.Printf("Erreur lors de l'échange avec le serveur DNS de Google: %s\n", err.Error())
-		m.SetRcode(r, dns.RcodeServerFailure)
-	} else {
-		// Copiez la réponse de Google dans le message de réponse
-		for _, a := range in.Answer {
-			m.Answer = append(m.Answer, a)
-		}
-	}
-
-	// Écrivez la réponse au client
-	err = w.WriteMsg(m)
-	if err != nil {
-		log.Printf("Erreur lors de l'écriture de la réponse au client: %s\n", err.Error())
+		log.Printf("Erreur lors de la connexion au serveur DNS de Google: %v", err)
 		return err
 	}
+	defer conn.Close()
+
+	_, err = conn.Write(buf)
+	if err != nil {
+		log.Printf("Erreur lors de l'envoi de la requête au serveur DNS de Google: %v", err)
+		return err
+	}
+
+	responseData := make([]byte, 512)
+	n, err := conn.Read(responseData)
+	if err != nil {
+		log.Printf("Erreur lors de la réception de la réponse du serveur DNS de Google: %v", err)
+		return err
+	}
+
+	_, err = pc.WriteTo(responseData[:n], addr)
+	if err != nil {
+		log.Printf("Erreur lors de l'écriture de la réponse au client: %v", err)
+		return err
+	}
+
 	return nil
 }

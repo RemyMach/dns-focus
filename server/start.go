@@ -23,6 +23,6 @@ func Start(dnsConfig *dto.DnsConfig) {
 			fmt.Printf("Connection error [%s]: %s\n", addr.String(), err)
 			continue
 		}
-		go resolver.HandlePacket(p, addr, buf[:n], dnsConfig)
+		go resolver.HandlePacket(p, addr, buf[:n], dnsConfig, "proxy")
 	}
 }
