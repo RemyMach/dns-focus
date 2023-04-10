@@ -87,22 +87,22 @@ you can block domains by adding domain names to those already present or make yo
 - To start the DNS server in any mode through the google dns server :
 
 ```bash
-./main dns {mode} --proxy
+./main {mode} --proxy
 ```
 
 - To start the DNS server in focus mode with google proxy (prefered mode to work in focus mode):
 ```bash
-./main dns focus --proxy
+./main focus --proxy
 ```
 
 - To start the DNS server in focus mode with google proxy and a specify config json file for example config/config.json:
 ```bash
-./main dns focus --file "config/config.json" --proxy
+./main focus --file "config/config.json" --proxy
 ```
 
 - To start the DNS server in focus mode with only your dns server to resolve Dns request (for example if you want no cache on the domain name resolution)
 ```bash
-./main dns focus
+./main focus
 ```
 
 

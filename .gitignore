@@ -1,3 +1,4 @@
 test
 dns-config/backup/*
 !dns-config/backup/.gitkeep
+.env

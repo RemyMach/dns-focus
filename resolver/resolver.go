@@ -17,8 +17,6 @@ import (
 
 var ROOT_SERVERS = [8]string{"198.41.0.4","199.9.14.201","192.33.4.12","199.7.91.13","192.203.230.10","192.5.5.241","192.112.36.4","198.97.190.53"}
 
-var ROOT_SERVERS_IPV6 = [8]string{"2001:503:ba3e::2:30,2001:500:200::b,2001:500:2::c,2001:500:2d::d,2001:500:a8::e,2001:500:2f::f,2001:500:12::d0d,2001:500:1::53"}
-
 func HandlePacket(pc net.PacketConn, addr net.Addr, buf []byte, dnsConfig *config.DnsConfig, serverMode common.ServerMode) {
 
 	ipBlocked, err := handleBlockDomains(pc, addr, buf, dnsConfig)
@@ -31,8 +29,8 @@ func HandlePacket(pc net.PacketConn, addr net.Addr, buf []byte, dnsConfig *confi
 	}
 
 	if serverMode == common.Proxy {
-		handleDNSRequestToGoogleDns(pc, buf, addr)
-	} else {
+		handleDNSRequestToProxy(pc, buf, addr)
+	} else if serverMode == common.Server {
 		if err := handlePacket(pc, addr, buf); err != nil {
 			fmt.Printf("handlePacket error [%s]: %s\n", addr.String(), err)
 		}
@@ -49,7 +47,7 @@ func handlePacket(pc net.PacketConn, addr net.Addr, buf []byte) error {
 	if err != nil {
 		return err
 	}
-	response, err := dnsQuery(getRootServers(), questions[0])
+	response, err := dnsQuery(getRootServers(), questions[0], 3)
 	if err != nil {
 		return err
 	}
@@ -69,8 +67,9 @@ func handlePacket(pc net.PacketConn, addr net.Addr, buf []byte) error {
 	return nil
 }
 
-func dnsQuery(servers []net.IP, question dnsmessage.Question) (*dnsmessage.Message, error) {
-	for i := 0; i < 3; i++ {
+func dnsQuery(servers []net.IP, question dnsmessage.Question, numberRetry int) (*dnsmessage.Message, error) {
+	
+	for i := 0; i < numberRetry; i++ {
 		dnsAnswer, header, err := outgoingDnsQuery(servers, question)
 		if err != nil {
 			return nil, err
@@ -127,7 +126,7 @@ func dnsQuery(servers []net.IP, question dnsmessage.Question) (*dnsmessage.Messa
 		if !newResolverServersFound {
 			for _, nameserver := range nameservers {
 				if !newResolverServersFound {
-					response, err := dnsQuery(getRootServers(), dnsmessage.Question{Name: dnsmessage.MustNewName(nameserver), Type: dnsmessage.TypeA, Class: dnsmessage.ClassINET})
+					response, err := dnsQuery(getRootServers(), dnsmessage.Question{Name: dnsmessage.MustNewName(nameserver), Type: dnsmessage.TypeA, Class: dnsmessage.ClassINET}, 3)
 					if err != nil {
 						fmt.Printf("warning: lookup of nameserver %s failed: %err\n", nameserver, err)
 					} else {
@@ -234,7 +233,7 @@ func RespondToBlockIp(pc net.PacketConn, addr net.Addr, buf []byte) {
 			OpCode:             msg.Header.OpCode,
 			Authoritative:      true,
 			RecursionAvailable: msg.Header.RecursionDesired,
-			RecursionDesired: true,
+			RecursionDesired:   true,
 			RCode:              dnsmessage.RCodeSuccess,
 		}
 
@@ -293,7 +292,7 @@ func handleBlockDomains(pc net.PacketConn, addr net.Addr, buf []byte, dnsConfig 
 }
 
 
-func handleDNSRequestToGoogleDns(pc net.PacketConn, buf []byte, addr net.Addr) error {
+func handleDNSRequestToProxy(pc net.PacketConn, buf []byte, addr net.Addr) error {
 
 	conn, err := net.Dial("udp", "8.8.8.8:53")
 	if err != nil {
