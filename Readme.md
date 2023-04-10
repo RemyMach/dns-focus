@@ -52,7 +52,7 @@ dns focus is an open source DNS server that allows you to easily block unwanted 
             ```
 
 Once you have finished using the server, remember to reset the basic dns server
-- for example to use google dns server
+- for example to use google dns server on mac
     ```bash
     networksetup -setdnsservers Wi-Fi 8.8.8.8
     ```
@@ -77,12 +77,12 @@ you can block domains by adding domain names to those already present or make yo
 }
 ```
 
-## Utilisation
+## Usage
 
 ### mode
 - focus
 
-### start
+### start with your go environment
 
 - To start the DNS server in any mode through the google dns server :
 
@@ -105,6 +105,19 @@ you can block domains by adding domain names to those already present or make yo
 ./main focus
 ```
 
+### start with docker
+- To start the DNS server with docker :
+
+1. make sur to have only 127.0.0.1 on your dns server config, otherwise it might not work even if 127.0.0.1 is specified before the other dns server
+
+2. copy the config file with the docker start command `cp .env.example .env`
+
+3. modify this command if you want to use an other mode for this dns server
+
+4. start the app in docker
+```sh
+docker compose up --build
+```    
 
 ## Licence
 
