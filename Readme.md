@@ -11,6 +11,7 @@ dns focus is an open source DNS server that allows you to easily block unwanted 
 - [Usage](#Usage)
     - [Start with your go environment](#Start-with-your-go-environment)
     - [Start with Docker](#Start-with-docker)
+    - [Env variables](#env-variables)
 - [Licence](#licence)
 
 ## Features
@@ -114,15 +115,15 @@ you can block domains by adding domain names to those already present or make yo
 
 2. copy the config file with the docker start command `cp .env.example .env`
 
-3. modify this command if you want to use an other mode for this dns server
+3. modify DOCKER_APP_COMMAND if you want to use an other command to start your dns-focus
 
 4. start the app in docker
 ```sh
 docker compose up --build
 ```
 
-#### env variables
-DOCKER_APP_COMMAND -> useful only to start the program in the docker env, this command will be used to start your container
+#### env-variables
+**Description :** DOCKER_APP_COMMAND is useful only to start the program in the docker env, this command will be used to start your container
 
 ## Licence
 
