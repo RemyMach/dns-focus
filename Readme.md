@@ -1,6 +1,8 @@
 # DNS focus
 
-dns focus is an open source DNS server that allows you to easily block unwanted domains for your focus
+Dns focus is an open source DNS server that allows you to easily block unwanted domains for your focus
+
+By sharing your DNS server on a network, your friends can link your DNS server to start a friendly working session with the same blocked DNS.
 
 ## Table of contents
 
@@ -25,8 +27,7 @@ dns focus is an open source DNS server that allows you to easily block unwanted 
 
 ## Requirements
 
-- Go 1.16 or higher
-- A compatible operating system (Linux, macOS)
+- Golang or Docker
 
 ## Install
 
@@ -37,11 +38,11 @@ dns focus is an open source DNS server that allows you to easily block unwanted 
    ```
 
 
-2. Compile the project (to use in your go environment)
+2. Compile the project (to use in your go environment)(not needed if use in docker)
 
     `go build -o main`
 
-3. Configure your system or device to use the DNS server by following the instructions specific to your operating system.
+3. WARNING Configure your system or device to use the DNS server by following the instructions specific to your operating system. If you use Docker you have to do it with your 127.0.0.1 address too
 
     - for mac you can simply use with your wifi network
     ```bash
@@ -115,7 +116,7 @@ you can block domains by adding domain names to those already present or make yo
 ./main focus
 ```
 
-#### **host (For Mac not in Docker)**
+#### **host (For Mac not available in Docker)**
 - To set/reset your dns server configured on your Mac:
 
 - Set your dns server to 127.0.0.1 and do a backup file with your current dns nameserver
@@ -142,7 +143,10 @@ docker compose up --build
 ```
 
 #### env-variables
-**Description :** DOCKER_APP_COMMAND is useful only to start the program in the docker env, this command will be used to start your container
+**Description :** DOCKER_APP_COMMAND is useful only to start the program in the docker env, this command will be used to start your golang application
+
+**example :**  DOCKER_APP_COMMAND="./main focus --proxy" start your dns server in docker in focus mode
+
 
 ## Licence
 
