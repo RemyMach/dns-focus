@@ -1,6 +1,8 @@
 package main
 
-import "dns-focus/cli"
+import (
+	"dns-focus/src/cli"
+)
 
 func main() {
 	cli.InitCli()

@@ -1,7 +1,8 @@
 package cli
 
 import (
-	"dns-focus/cli/focus"
+	"dns-focus/src/cli/focus"
+	"dns-focus/src/cli/host"
 	"fmt"
 	"os"
 
@@ -16,7 +17,9 @@ var rootCmd = &cobra.Command{
 
 func InitCli() {
 	focusCommand := focus.InitFocusCommand()
+	hostCommand := host.InitHostCommand()
 	rootCmd.AddCommand(focusCommand)
+	rootCmd.AddCommand(hostCommand)
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
 
 	if err := rootCmd.Execute(); err != nil {

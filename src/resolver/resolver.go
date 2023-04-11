@@ -3,14 +3,14 @@ package resolver
 import (
 	"bufio"
 	"crypto/rand"
-	"dns-focus/common"
-	"dns-focus/config"
+	"dns-focus/src/common"
+	"dns-focus/src/config"
 	"fmt"
 	"log"
 	"math/big"
 	"net"
 
-	"dns-focus/utils"
+	"dns-focus/src/utils"
 
 	"golang.org/x/net/dns/dnsmessage"
 )

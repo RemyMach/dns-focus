@@ -1,3 +1,0 @@
-nameserver 127.0.0.1
-nameserver 89.2.0.1
-nameserver 89.2.0.2
