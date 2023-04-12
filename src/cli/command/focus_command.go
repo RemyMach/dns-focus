@@ -1,4 +1,4 @@
-package focus
+package command
 
 import (
 	"dns-focus/src/common"

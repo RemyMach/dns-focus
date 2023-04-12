@@ -1,4 +1,4 @@
-package host
+package command
 
 import (
 	hostDns "dns-focus/src/host-dns"
