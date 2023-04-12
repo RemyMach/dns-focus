@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"dns-focus/src/cli/command"
+	"dns-focus/cli/command"
 	"fmt"
 	"os"
 

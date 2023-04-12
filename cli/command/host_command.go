@@ -1,7 +1,7 @@
 package command
 
 import (
-	hostDns "dns-focus/src/host-dns"
+	hostDns "dns-focus/host-dns"
 	"log"
 
 	"github.com/spf13/cobra"

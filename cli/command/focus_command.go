@@ -1,9 +1,9 @@
 package command
 
 import (
-	"dns-focus/src/common"
-	"dns-focus/src/config"
-	"dns-focus/src/server"
+	"dns-focus/common"
+	"dns-focus/config"
+	"dns-focus/server"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -28,7 +28,7 @@ func InitFocusCommand() *cobra.Command {
 			var filePath string
 			flag := cmd.Flag("file")
 			if flag.Value.String() == "" {
-				filePath = "src/config/config.json"
+				filePath = "config/config.json"
 			} else {
 				filePath = flag.Value.String()
 			}

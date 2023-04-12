@@ -1,7 +1,7 @@
 package main
 
 import (
-	"dns-focus/src/cli"
+	"dns-focus/cli"
 )
 
 func main() {

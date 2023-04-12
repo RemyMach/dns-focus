@@ -1,9 +1,9 @@
 package server
 
 import (
-	"dns-focus/src/common"
-	"dns-focus/src/config"
-	"dns-focus/src/resolver"
+	"dns-focus/common"
+	"dns-focus/config"
+	"dns-focus/resolver"
 	"fmt"
 	"log"
 	"net"

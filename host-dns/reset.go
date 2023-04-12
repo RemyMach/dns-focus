@@ -1,7 +1,7 @@
 package hostDns
 
 import (
-	"dns-focus/src/utils"
+	"dns-focus/utils"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-const BACKUP_DIR = "src/host-dns/backup"
+const BACKUP_DIR = "host-dns/backup"
 
 func SetDnsForMac() {
 
