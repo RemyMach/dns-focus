@@ -9,8 +9,7 @@ import (
 	"log"
 	"math/big"
 	"net"
-
-	"dns-focus/utils"
+	"strings"
 
 	"golang.org/x/net/dns/dnsmessage"
 )
@@ -237,9 +236,10 @@ func RespondToBlockIp(pc net.PacketConn, addr net.Addr, buf []byte) {
 			RCode:              dnsmessage.RCodeSuccess,
 		}
 
-		var answers []dnsmessage.Resource
-		for _, question := range msg.Questions {
-			answer := dnsmessage.Resource{
+		//var answers []dnsmessage.Resource
+		answers := make([]dnsmessage.Resource, len(msg.Questions))
+		for index, question := range msg.Questions {
+			answers[index] = dnsmessage.Resource{
 				Header: dnsmessage.ResourceHeader{
 					Name:   question.Name,
 					Type:   dnsmessage.TypeA,
@@ -250,7 +250,6 @@ func RespondToBlockIp(pc net.PacketConn, addr net.Addr, buf []byte) {
 					A: [4]byte{127, 0, 0, 1},
 				},
 			}
-			answers = append(answers, answer)
 		}
 
 		response := dnsmessage.Message{
@@ -269,7 +268,7 @@ func RespondToBlockIp(pc net.PacketConn, addr net.Addr, buf []byte) {
 	}
 }
 
-func handleBlockDomains(pc net.PacketConn, addr net.Addr, buf []byte, dnsConfig *config.DnsConfig) (bool, error) {
+func handleBlockDomains(pc net.PacketConn, addr net.Addr, buf []byte, dnsConfig *config.DnsConfig) (isBlocked bool, err error) {
 	var msg dnsmessage.Message
 	if err := msg.Unpack(buf); err != nil {
 		fmt.Printf("Error when unpacking the message : %v\n", err)
@@ -277,11 +276,10 @@ func handleBlockDomains(pc net.PacketConn, addr net.Addr, buf []byte, dnsConfig 
 	}
 
 	for _, domain := range dnsConfig.DomainsBlocked {
-		matchRegex := utils.MatchRegex(`^.*` + domain + `\.$`, msg.Questions[0].Name.String())
-		if matchRegex {
-			fmt.Printf("----------------------------------------------\n")
+		if strings.HasSuffix(msg.Questions[0].Name.String(), domain+".") {
+			fmt.Println("----------------------------------------------")
 			fmt.Printf("Block Ip for [%s]: %s\n", addr.String(), domain)
-			fmt.Printf("----------------------------------------------\n")
+			fmt.Println("----------------------------------------------")
 			RespondToBlockIp(pc, addr, buf)
 			
 			return true, nil
